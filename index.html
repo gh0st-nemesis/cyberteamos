@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <title>CyberTeam OS</title>
+    <meta name="description" content="Simulation blue team immersive, missions cybersécurité, interface OS, pour une bonne sensibilisation.">
+    <meta property="og:title" content="CyberTeam OS">
+    <meta property="og:description" content="Simulation blue team immersive, missions cybersécurité, interface OS, pour une bonne sensibilisation.">
+    <meta property="og:image" content="logo.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CyberTeam OS">
+    <meta name="twitter:description" content="Simulation blue team immersive, missions cybersécurité, interface OS, pour une bonne sensibilisation.">
+    <meta name="twitter:image" content="logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body style="background:#0a101a;">
+    <div id="login-screen" style="position:fixed;z-index:99999;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(120deg,#181f2a 0%,#232c3b 100%);">
+        <img src="logo.png" style="width:160px;filter:drop-shadow(0 0 32px #00e6a8cc);margin-bottom:32px;" alt="logo">
+        <div id="login-title" style="color:#00e6a8;font-size:2.1rem;font-family:monospace;letter-spacing:2px;margin-bottom:18px;">CYBERTEAM OS</div>
+        <div id="login-terminal" style="background:#10151e;border-radius:10px;padding:24px 36px;box-shadow:0 0 24px #00e6a888;font-family:monospace;color:#00e6a8;font-size:1.2rem;min-width:320px;text-align:left;">
+            <span id="login-anim"></span><span class="blinking-cursor">_</span>
+        </div>
+        <button id="login-btn" style="margin-top:32px;background:#00e6a8;color:#10151e;border:none;padding:12px 36px;border-radius:8px;font-size:1.1rem;box-shadow:0 2px 12px #00e6a888;cursor:pointer;">Connexion</button>
+    </div>
+    <div id="game"></div>
+    <div id="score" style="display:none;"></div>
+    <div id="restart" style="display:none;"></div>
+    <script src="game.js"></script>
+    <script>
+    let loginText = 'Connexion sécurisée...\nAuthentification blue team...\nAccès au bureau en cours...';
+    let i = 0;
+    let typing = false;
+    function typeLoginAnim() {
+        if (i < loginText.length) {
+            document.getElementById('login-anim').innerHTML += loginText[i] === '\n' ? '<br>' : loginText[i];
+            i++;
+            setTimeout(typeLoginAnim, 32);
+        } else {
+            setTimeout(()=>{
+                document.getElementById('login-screen').style.opacity = 0;
+                setTimeout(()=>{
+                    document.getElementById('login-screen').style.display = 'none';
+                }, 400);
+            }, 600);
+        }
+    }
+    document.getElementById('login-btn').onclick = function() {
+        if (typing) return;
+        typing = true;
+        document.getElementById('login-btn').disabled = true;
+        document.getElementById('login-btn').style.opacity = 0.5;
+        typeLoginAnim();
+    };
+    </script>
+</body>
+</html>
