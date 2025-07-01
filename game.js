@@ -433,7 +433,7 @@ function startMemoryGame() {
                 selected=[];
                 if(found===5){
                     scores.memory=1;document.getElementById('score-memory').innerText=1;
-                    document.getElementById('game').innerHTML = `<h2>✅ Bravo !</h2><p>Tu as tout trouvé !</p><button onclick='showArcadeMenu()'>Retour menu</button>`;
+                    document.getElementById('game').innerHTML = `<h2>✅ Bravo !</h2><p>Tu as tout trouvé !</p><button onclick='showArcadeMenu'()Retour menu</button>`;
                 }
             },500);
         }
@@ -478,13 +478,43 @@ function showDesktop() {
     document.getElementById('restart').style.display = 'none';
     document.getElementById('security-bar').style.width = security + '%';
     document.getElementById('game').innerHTML = `
+        <style>
+        #desktop-icons {
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            grid-auto-flow: column;
+            gap: 36px;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 48px 32px 24px 32px;
+            min-height: 420px;
+        }
+        .desktop-icon {
+            width: 90px; height: 90px; background: rgba(0,230,168,0.10); border-radius: 18px; box-shadow: 0 2px 12px #00e6a822;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 2.2rem; color: #00e6a8; cursor: pointer; transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent; position: relative;
+        }
+        .desktop-icon:hover {
+            background: #00e6a8; color: #181f2a; transform: translateY(-6px) scale(1.07);
+            box-shadow: 0 6px 24px #00e6a888;
+            border: 2px solid #00e6a8;
+        }
+        .desktop-icon-label {
+            margin-top: 8px; font-size: 1.05rem; color: #fff; text-shadow: 0 2px 8px #10151e99;
+            font-weight: 500; letter-spacing: 0.01em; text-align: center;
+        }
+        </style>
         <div id='desktop-bg'>
             <div id='desktop-icons'>
-                <div class='desktop-icon' onclick='openWindow("terminal")'>🖥️<br>Terminal</div>
-                <div class='desktop-icon' onclick='openWindow("mail")'>📧<br>Mail</div>
-                <div class='desktop-icon' onclick='openWindow("antivirus")'>🛡️<br>Antivirus</div>
-                <div class='desktop-icon' onclick='openWindow("logs")'>📜<br>Logs</div>
-                <div class='desktop-icon' onclick='openWindow("scanner")'>🌐<br>Scanner</div>
+                <div class='desktop-icon' onclick='openWindow("terminal")'>🖥️<div class='desktop-icon-label'>Terminal</div></div>
+                <div class='desktop-icon' onclick='openWindow("mail")'>📧<div class='desktop-icon-label'>Mail</div></div>
+                <div class='desktop-icon' onclick='openWindow("antivirus")'>🛡️<div class='desktop-icon-label'>Antivirus</div></div>
+                <div class='desktop-icon' onclick='openWindow("logs")'>📜<div class='desktop-icon-label'>Logs</div></div>
+                <div class='desktop-icon' onclick='openWindow("scanner")'>🌐<div class='desktop-icon-label'>Scanner</div></div>
+                <div class='desktop-icon' onclick='openWindow("docs")'>📂<div class='desktop-icon-label'>Docs/sensi</div></div>
+                <div class='desktop-icon' onclick='openWindow("tools")'>🛠️<div class='desktop-icon-label'>Docs/Outils</div></div>
+                <div class='desktop-icon' onclick='openWindow("linkscan")'>🔎<div class='desktop-icon-label'>Scan de lien</div></div>
             </div>
             <div id='window-area'></div>
             <div id='missions-panel'></div>
@@ -494,6 +524,9 @@ function showDesktop() {
                 <button class='taskbar-btn' onclick='openWindow("antivirus")'>🛡️ Antivirus</button>
                 <button class='taskbar-btn' onclick='openWindow("logs")'>📜 Logs</button>
                 <button class='taskbar-btn' onclick='openWindow("scanner")'>🌐 Scanner</button>
+                <button class='taskbar-btn' onclick='openWindow("docs")'>📂 Docs/Sensibilisation</button>
+                <button class='taskbar-btn' onclick='openWindow("tools")'>🛠️ Docs/Outils</button>
+                <button class='taskbar-btn' onclick='openWindow("linkscan")'>🔎 Scan de lien</button>
             </div>
         </div>
     `;
@@ -509,39 +542,163 @@ window.openWindow = function(app) {
     else if(app==="antivirus") winHtml = makeWindow(winId, 'Antivirus', getAntivirusContent(winId));
     else if(app==="logs") winHtml = makeWindow(winId, 'Logs', getLogsContent(winId));
     else if(app==="scanner") winHtml = makeWindow(winId, 'Scanner Réseau', getScannerContent(winId));
-    area.innerHTML += winHtml;
-    makeDraggable(winId);
-    if(app==="mail") validateMission('mail');
-    if(app==="antivirus") validateMission('antivirus');
+    else if(app==="docs") winHtml = makeWindow(winId, 'Docs/Sensibilisation', getDocsContent(winId));
+    else if(app==="tools") winHtml = makeWindow(winId, 'Docs/Outils', getToolsContent(winId));
+    else if(app==="linkscan") winHtml = makeWindow(winId, 'Scan de lien', getLinkScanContent(winId));
+    if(winHtml) {
+        area.innerHTML += winHtml;
+        makeDraggable(winId);
+    }
 };
 
+// Ajout d'une fonction centralisée pour la validation des missions via input
+window.validateMissionInput = function(type, value, winId) {
+    value = value.trim();
+    let idx = -1;
+    if(type === 'mail') {
+        // Exemple : demander l'IP de phishing (fictive)
+        if(value === '185.42.56.23') {
+            idx = missions.findIndex(m => m.type==='mail' && !m.done);
+            if(idx !== -1) completeMission(idx);
+            return {ok:true, msg:"IP de phishing validée !"};
+        } else {
+            return {ok:false, msg:"IP incorrecte. Relisez le mail."};
+        }
+    }
+    if(type === 'logs') {
+        if(value === '192.168.1.12') {
+            idx = missions.findIndex(m => m.type==='logs' && !m.done);
+            if(idx !== -1) completeMission(idx);
+            return {ok:true, msg:"IP anormale validée !"};
+        } else {
+            return {ok:false, msg:"IP incorrecte. Relisez les logs."};
+        }
+    }
+    if(type === 'scanner') {
+        if(value === '192.168.1.12') {
+            idx = missions.findIndex(m => m.type==='scanner' && !m.done);
+            if(idx !== -1) completeMission(idx);
+            return {ok:true, msg:"IP suspecte validée !"};
+        } else {
+            return {ok:false, msg:"IP incorrecte. Relisez le scan."};
+        }
+    }
+    if(type === 'antivirus') {
+        if(value.toLowerCase() === 'aucun malware détecté') {
+            idx = missions.findIndex(m => m.type==='antivirus' && !m.done);
+            if(idx !== -1) completeMission(idx);
+            return {ok:true, msg:"Scan antivirus validé !"};
+        } else {
+            return {ok:false, msg:"Résultat incorrect. Relancez le scan."};
+        }
+    }
+    if(type === 'terminal') {
+        // Pour les missions terminal, on valide via la commande exécutée (déjà géré dans submitTerminalCmd)
+        return {ok:false, msg:"Validation via la commande terminal."};
+    }
+    return {ok:false, msg:"Type de mission inconnu."};
+};
+
+// Modification de getMailContent pour inclure un input de validation
 function getMailContent(winId) {
-    return `<div style='padding:18px;color:#00e6a8;font-family:monospace;'>
-      <b>Boîte mail professionnelle</b><br><br>
-      <b>Objet :</b> [ALERTE] Activité suspecte détectée<br>
-      <b>De :</b> SOC<br>
-      <b>Message :</b> Un trafic anormal a été détecté sur <span style='color:#fff;background:#e60026;padding:2px 6px;border-radius:4px;'>192.168.1.12</span>.<br><br>
-      <b>Action :</b> Recopiez l'IP suspecte ci-dessous et cliquez sur "Signaler phishing".<br>
-      <form onsubmit='return reportPhishing("${winId}")' style='margin-top:10px;'>
-        <input id='phish-ip-${winId}' placeholder='IP suspecte...' style='background:#181f2a;color:#00e6a8;border:1px solid #00e6a8;padding:6px 12px;border-radius:6px;font-family:monospace;width:160px;'>
-        <button type='submit' style='background:#00e6a8;color:#10151e;border:none;padding:6px 18px;border-radius:6px;margin-left:8px;cursor:pointer;'>Signaler phishing</button>
-      </form>
-      <div id='mail-feedback-${winId}' style='margin-top:8px;min-height:18px;'></div>
+    return `<div style='padding:0 0 0 0;'>
+    <div style='background:#fff; border-radius:10px 10px 0 0; border-bottom:1px solid #eee; padding:18px 24px 10px 24px; display:flex; align-items:center;'>
+        <img src='logo.png' alt='Bank Logo' style='height:38px;margin-right:18px;'>
+        <span style='font-size:1.25rem;color:#1a1a1a;font-weight:bold;'>Banque Nationale</span>
+    </div>
+    <div style='background:#f7f7f7; padding:24px 28px; color:#222; font-family:sans-serif; border-radius:0 0 10px 10px;'>
+        <div style='font-size:1.1rem; margin-bottom:18px;'>
+            <b>Objet :</b> <span style='color:#e60026;'>[Alerte Sécurité] Vérification urgente de votre compte</span><br>
+            <b>De :</b> Banque Nationale &lt;support@banque-nat.com&gt;<br>
+            <b>À :</b> Vous
+        </div>
+        <div style='margin-bottom:18px;'>
+            Bonjour,<br><br>
+            Suite à une activité inhabituelle, nous vous demandons de <b>vérifier vos informations</b> pour éviter la suspension de votre compte.<br>
+            <a href='#' style='color:#0074d9;text-decoration:underline;' onclick='alert("⚠️ Ce lien est un piège de phishing ! Ne cliquez jamais sur ce type de lien.");return false;'>Cliquez ici pour vérifier votre compte</a><br>
+            <span style='display:inline-block;margin-top:8px;color:#888;font-size:0.98rem;'>Lien à scanner : <span style='background:#181f2a;color:#00e6a8;padding:2px 8px;border-radius:6px;font-family:monospace;'>http://banque-nat.com/verify</span></span><br><br>
+            Merci de votre compréhension.<br>
+        </div>
+        <div style='font-size:0.98rem;color:#888;margin-bottom:10px;'>
+            --<br>
+            Service Client Banque Nationale<br>
+            <span style='font-style:italic;'>support@banque-nat.com</span>
+        </div>
+        <div style='font-size:0.95rem;color:#b00;margin-top:12px;'>⚠️ Attention : Ceci est un exemple d'email de phishing pour sensibilisation.</div>
+        <div style='margin-top:18px;'>
+            <b>Action :</b> Recopiez l'IP de phishing détectée dans ce mail (ex : 185.42.56.23) et validez.<br>
+            <form onsubmit='return validateMailInput("${winId}")' style='margin-top:10px;'>
+                <input id='mail-ip-${winId}' placeholder='IP de phishing...' style='background:#181f2a;color:#00e6a8;border:1px solid #00e6a8;padding:6px 12px;border-radius:6px;font-family:monospace;width:160px;'>
+                <button type='submit' style='background:#00e6a8;color:#10151e;border:none;padding:6px 18px;border-radius:6px;margin-left:8px;cursor:pointer;'>Valider mail</button>
+            </form>
+            <div id='mail-feedback-${winId}' style='margin-top:8px;min-height:18px;'></div>
+        </div>
+    </div>
     </div>`;
 }
 
-window.reportPhishing = function(winId) {
-    const val = document.getElementById('phish-ip-' + winId).value.trim();
+window.validateMailInput = function(winId) {
+    const val = document.getElementById('mail-ip-' + winId).value;
     const feedback = document.getElementById('mail-feedback-' + winId);
-    if(val === '192.168.1.12') {
-        feedback.innerHTML = `<span style='color:#00e6a8;'>Phishing signalé avec succès !</span>`;
-        const idx = missions.findIndex(m => m.type==='mail' && !m.done);
-        if(idx !== -1) completeMission(idx);
-    } else {
-        feedback.innerHTML = `<span style='color:#e60026;'>IP incorrecte. Relisez le mail.</span>`;
-    }
+    const res = window.validateMissionInput('mail', val, winId);
+    feedback.innerHTML = `<span style='color:${res.ok ? '#00e6a8' : '#e60026'};'>${res.msg}</span>`;
     return false;
 };
+
+function getDocsContent(winId) {
+    return `<div style='padding:18px 24px; color:#00e6a8; font-family:monospace; max-height:340px; overflow-y:auto;'>
+    <h3 style='color:#fff;'>🧠 Sensibilisation à la cybersécurité</h3>
+    <ul style='color:#00e6a8; font-size:1.08rem; line-height:1.7;'>
+        <li>Ne cliquez jamais sur un lien suspect dans un mail inattendu.</li>
+        <li>Vérifiez toujours l'adresse de l'expéditeur et le contenu du mail.</li>
+        <li>Utilisez des mots de passe forts et uniques pour chaque service.</li>
+        <li>Ne branchez jamais de clé USB inconnue sur votre ordinateur.</li>
+        <li>Gardez vos logiciels et antivirus à jour.</li>
+        <li>En cas de doute, contactez le service informatique.</li>
+        <li>Ne communiquez jamais d'informations sensibles par mail non sollicité.</li>
+        <li>Privilégiez l'accès direct aux sites officiels (ne passez pas par les liens reçus).</li>
+    </ul>
+    <h4 style='color:#fff;margin-top:18px;'>Pourquoi se protéger ?</h4>
+    <p style='color:#00e6a8;'>Les cyberattaques sont de plus en plus fréquentes et sophistiquées. Un simple clic peut compromettre toute une organisation. Restez vigilant !</p>
+    </div>`;
+}
+
+function getMailContent(winId) {
+    return `<div style='padding:0 0 0 0;'>
+    <div style='background:#fff; border-radius:10px 10px 0 0; border-bottom:1px solid #eee; padding:18px 24px 10px 24px; display:flex; align-items:center;'>
+        <img src='logo.png' alt='Bank Logo' style='height:38px;margin-right:18px;'>
+        <span style='font-size:1.25rem;color:#1a1a1a;font-weight:bold;'>Banque Nationale</span>
+    </div>
+    <div style='background:#f7f7f7; padding:24px 28px; color:#222; font-family:sans-serif; border-radius:0 0 10px 10px;'>
+        <div style='font-size:1.1rem; margin-bottom:18px;'>
+            <b>Objet :</b> <span style='color:#e60026;'>[Alerte Sécurité] Vérification urgente de votre compte</span><br>
+            <b>De :</b> Banque Nationale &lt;support@banque-nat.com&gt;<br>
+            <b>À :</b> Vous
+        </div>
+        <div style='margin-bottom:18px;'>
+            Bonjour,<br><br>
+            Suite à une activité inhabituelle, nous vous demandons de <b>vérifier vos informations</b> pour éviter la suspension de votre compte.<br>
+            <a href='#' style='color:#0074d9;text-decoration:underline;' onclick='alert("⚠️ Ce lien est un piège de phishing ! Ne cliquez jamais sur ce type de lien.");return false;'>Cliquez ici pour vérifier votre compte</a><br>
+            <span style='display:inline-block;margin-top:8px;color:#888;font-size:0.98rem;'>Lien à scanner : <span style='background:#181f2a;color:#00e6a8;padding:2px 8px;border-radius:6px;font-family:monospace;'>http://banque-nat.com/verify</span></span><br><br>
+            Merci de votre compréhension.<br>
+        </div>
+        <div style='font-size:0.98rem;color:#888;margin-bottom:10px;'>
+            --<br>
+            Service Client Banque Nationale<br>
+            <span style='font-style:italic;'>support@banque-nat.com</span>
+        </div>
+        <div style='font-size:0.95rem;color:#b00;margin-top:12px;'>⚠️ Attention : Ceci est un exemple d'email de phishing pour sensibilisation.</div>
+        <div style='margin-top:18px;'>
+            <b>Action :</b> Recopiez l'IP de phishing détectée dans ce mail (ex : 185.42.56.23) et validez.<br>
+            <form onsubmit='return validateMailInput("${winId}")' style='margin-top:10px;'>
+                <input id='mail-ip-${winId}' placeholder='IP de phishing...' style='background:#181f2a;color:#00e6a8;border:1px solid #00e6a8;padding:6px 12px;border-radius:6px;font-family:monospace;width:160px;'>
+                <button type='submit' style='background:#00e6a8;color:#10151e;border:none;padding:6px 18px;border-radius:6px;margin-left:8px;cursor:pointer;'>Valider mail</button>
+            </form>
+            <div id='mail-feedback-${winId}' style='margin-top:8px;min-height:18px;'></div>
+        </div>
+    </div>
+    </div>`;
+}
 
 function getLogsContent(winId) {
     return `<div style='padding:18px;color:#00e6a8;font-family:monospace;max-height:220px;overflow-y:auto;'>
@@ -650,7 +807,6 @@ window.submitTerminalCmd = function(e, winId) {
 
 window.addEventListener('DOMContentLoaded', function() {
     showDesktop();
-    playBackgroundMusic();
 });
 
 function getAntivirusContent(winId) {
@@ -716,3 +872,79 @@ window.enableMusicAfterInteraction = function() {
 };
 window.addEventListener('click', window.enableMusicAfterInteraction);
 window.addEventListener('keydown', window.enableMusicAfterInteraction);
+
+// Ajout de l'icône Scan de lien sur le bureau et la barre des tâches
+// (à placer dans showDesktop, après les autres icônes)
+// Ajout dans #desktop-icons :
+// <div class='desktop-icon' onclick='openWindow("linkscan")'>🔎<div class='desktop-icon-label'>Scan de lien</div></div>
+// Ajout dans #taskbar :
+// <button class='taskbar-btn' onclick='openWindow("linkscan")'>🔎 Scan de lien</button>
+
+// Ajout de la fenêtre Scan de lien
+function getLinkScanContent(winId) {
+    return `<div style='padding:18px;color:#00e6a8;font-family:monospace;'>
+<b>Scan de lien suspect</b><br><br>
+Collez ici un lien suspect reçu par mail pour obtenir l'IP cible.<br>
+<form onsubmit='return validateLinkScanInput("${winId}")' style='margin-top:10px;'>
+  <input id='linkscan-url-${winId}' placeholder='Collez le lien ici...' style='background:#181f2a;color:#00e6a8;border:1px solid #00e6a8;padding:6px 12px;border-radius:6px;font-family:monospace;width:260px;'>
+  <button type='submit' style='background:#00e6a8;color:#10151e;border:none;padding:6px 18px;border-radius:6px;margin-left:8px;cursor:pointer;'>Analyser</button>
+</form>
+<div id='linkscan-feedback-${winId}' style='margin-top:12px;min-height:18px;'></div>
+</div>`;
+}
+
+window.validateLinkScanInput = function(winId) {
+    const val = document.getElementById('linkscan-url-' + winId).value.trim();
+    const feedback = document.getElementById('linkscan-feedback-' + winId);
+    // Simule la détection d'une IP de phishing si le lien contient "banque-nat.com"
+    if(val && (val.includes('banque-nat.com') || val.includes('phishing'))) {
+        feedback.innerHTML = `<span style='color:#00e6a8;'>IP détectée : <b>185.42.56.23</b><br>Utilisez cette IP pour valider la mission dans le Mail.</span>`;
+    } else if(val) {
+        feedback.innerHTML = `<span style='color:#e60026;'>Aucune menace détectée pour ce lien.</span>`;
+    } else {
+        feedback.innerHTML = '';
+    }
+    return false;
+};
+
+// Ajout du support dans openWindow
+const oldOpenWindow = window.openWindow;
+window.openWindow = function(app) {
+    let area = document.getElementById('window-area');
+    let winId = 'win-' + (++windowCount);
+    let winHtml = '';
+    if(app==="linkscan") winHtml = makeWindow(winId, 'Scan de lien', getLinkScanContent(winId));
+    else oldOpenWindow(app); // Appelle l'ancienne fonction pour les autres apps
+    if(winHtml) {
+        area.innerHTML += winHtml;
+        makeDraggable(winId);
+    }
+};
+
+// --- Compléter Docs/Outils avec commandes terminal et explications ---
+function getToolsContent(winId) {
+    return `<div style='padding:18px 24px; color:#00e6a8; font-family:monospace; max-height:340px; overflow-y:auto;'>
+    <h3 style='color:#fff;'>🛠️ Outils & Commandes Terminal</h3>
+    <ul style='color:#00e6a8; font-size:1.08rem; line-height:1.7;'>
+        <li><b>help</b> : Affiche la liste des commandes disponibles</li>
+        <li><b>scan</b> : Scanner le réseau pour détecter les machines suspectes</li>
+        <li><b>logs</b> : Ouvre les logs réseau</li>
+        <li><b>analyse</b> : Analyse les fichiers suspects détectés</li>
+        <li><b>isoler</b> : Isole une machine compromise du réseau</li>
+        <li><b>patch</b> : Déploie un correctif de sécurité</li>
+        <li><b>mail</b> : Ouvre le logiciel de messagerie</li>
+        <li><b>antivirus</b> : Ouvre l'antivirus</li>
+        <li><b>block &lt;ip&gt;</b> : Bloque une adresse IP précise</li>
+        <li><b>clear</b> : Efface l'écran du terminal</li>
+    </ul>
+    <h4 style='color:#fff;margin-top:18px;'>Logiciels disponibles</h4>
+    <ul style='color:#00e6a8; font-size:1.08rem; line-height:1.7;'>
+        <li>🖥️ <b>Terminal</b> : Exécutez des commandes pour gérer la sécurité</li>
+        <li>📧 <b>Mail</b> : Analysez les emails suspects</li>
+        <li>🛡️ <b>Antivirus</b> : Lancez des scans antivirus</li>
+        <li>📜 <b>Logs</b> : Consultez les journaux réseau</li>
+        <li>🌐 <b>Scanner</b> : Scannez le réseau pour détecter des anomalies</li>
+        <li>🔎 <b>Scan de lien</b> : Analysez un lien suspect pour obtenir l'IP cible</li>
+    </ul>
+    </div>`;
+}
