@@ -146,6 +146,10 @@ function completeMission(idx) {
       missionIndex++;
     }
     showMissionsPanel();
+    
+    if (missions.length === 0) {
+      document.getElementById('game').innerHTML = `<div style='text-align:center;margin-top:60px;'><h2 style='color:#00e6a8;font-size:2.2rem;'>🎉 Vous avez réussi à sauver HappyGames !</h2><p style='color:#fff;font-size:1.2rem;margin-top:18px;'>Bravo, toutes les missions ont été accomplies.</p><button onclick='location.reload()' style='margin-top:32px;background:#00e6a8;color:#10151e;font-size:1.1rem;padding:10px 32px;border:none;border-radius:8px;cursor:pointer;box-shadow:0 2px 12px #00e6a822;'>Recommencer</button></div>`;
+    }
   }, 800);
 }
 
